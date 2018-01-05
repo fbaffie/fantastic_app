@@ -44,16 +44,16 @@ ui <- dashboardPage(skin = "blue",
                            selected = "hbv_d"),  
         width = 12),
     
-    box(title ="Manipulate forcings",
+    box(title ="Adjust forcings",
         background ="black",
         status = "primary",
         solidHeader = TRUE, 
-        numericInput("meteo_corr",
+        numericInput("new_forcing",
                      label = "Change input:",
                      value = NULL),
         fluidRow(
-          column(3, actionButton("meteo_submit", "Change")),
-          column(3, actionButton("reset_sel", "Clear selection"))),
+          column(3, actionButton("change_forcing", "Change")),
+          column(3, actionButton("clear_stat", "Clear selection"))),
         width = 12),
     
     box(title ="Rerun models",
@@ -96,7 +96,7 @@ ui <- dashboardPage(skin = "blue",
 
       column(5,
 
-             leafletOutput(outputId = "stat_map",
+             leafletOutput(outputId = "map",
                            height = 900,
                            width = "100%")
 
@@ -113,6 +113,9 @@ ui <- dashboardPage(skin = "blue",
 
 server <- function(input, output, session) {
   
+  
+  # Reactive values
+  
   active_stat <- reactive({input$station})
   
   rv <- reactiveValues(
@@ -121,6 +124,9 @@ server <- function(input, output, session) {
     stat_manip = NULL,
     click_info = NULL
   )
+  
+  
+  # Action button for moving to next station
   
   observeEvent(input$next_stat, {
     istat <- which(df_meta$stat_id == active_stat())
@@ -133,6 +139,9 @@ server <- function(input, output, session) {
     }
   })
   
+  
+  # Action button for moving to previous station
+  
   observeEvent(input$prev_stat, {
     istat <- which(df_meta$stat_id == active_stat())
     if (istat - 1 > 0) {
@@ -144,19 +153,23 @@ server <- function(input, output, session) {
     }
   })
   
+  # Update map when changing station using dropdown menu, next and previous action button
+  
   # Update station selection for dropdown menu and map
   
-  observeEvent(input$stat_map_marker_click, {
+  observeEvent(input$map_marker_click, {
     updateSelectInput(
       session,
       "station",
-      selected = substring(input$stat_map_marker_click$id, 5)
+      selected = substring(input$map_marker_click$id, 5)
     )
   })
-
+  
+  
+  
   observeEvent(active_stat(), {
     istat <- which(df_meta$stat_id == active_stat())
-    leafletProxy("stat_map", session) %>%
+    leafletProxy("map", session) %>%
       clearGroup("selected") %>%
       addCircleMarkers(lng = df_meta$longitude[istat],
                        lat = df_meta$latitude[istat],
@@ -181,22 +194,22 @@ server <- function(input, output, session) {
   
   # Plot map with stations
   
-  output$stat_map <- renderLeaflet({
+  output$map <- renderLeaflet({
     plot_map(df_meta)
   })
   
   # Change forcing data
   
   observe({
-    if (!is.numeric(input$meteo_corr)) {
-      shinyjs::disable("meteo_corr")
-      shinyjs::disable("meteo_submit")
-      shinyjs::disable("reset_sel")
+    if (!is.numeric(input$new_forcing)) {
+      shinyjs::disable("new_forcing")
+      shinyjs::disable("change_forcing")
+      shinyjs::disable("clear_stat")
     } else {
-      shinyjs::enable("meteo_corr")
-      shinyjs::enable("meteo_submit")
+      shinyjs::enable("new_forcing")
+      shinyjs::enable("change_forcing")
       if (!is.null(rv$stat_manip)) {
-        shinyjs::enable("reset_sel")
+        shinyjs::enable("clear_stat")
       }
     }
   })
@@ -206,15 +219,15 @@ server <- function(input, output, session) {
     rv$click_info <- event_data("plotly_click", source = "meteorology")
     
     if (rv$click_info$curveNumber == 0 || rv$click_info$curveNumber == 2) {
-      updateNumericInput(session, "meteo_corr", label = "Change precipitation:")
-      updateNumericInput(session, "meteo_corr", value = rv$click_info$y)
+      updateNumericInput(session, "new_forcing", label = "Change precipitation:")
+      updateNumericInput(session, "new_forcing", value = rv$click_info$y)
     }
     
     if (rv$click_info$curveNumber == 1) {
-      updateNumericInput(session, "meteo_corr", value = NA)
+      updateNumericInput(session, "new_forcing", value = NA)
     }
     
-    leafletProxy("stat_map", session) %>%
+    leafletProxy("map", session) %>%
       
       showGroup("changeable") %>%
     
@@ -232,9 +245,9 @@ server <- function(input, output, session) {
   })
   
   
-  observeEvent(input$reset_sel, {
+  observeEvent(input$clear_stat, {
     
-    leafletProxy("stat_map", session) %>%
+    leafletProxy("map", session) %>%
       clearGroup("changeable") %>%
       hideGroup("test")
     
@@ -243,7 +256,7 @@ server <- function(input, output, session) {
   })
   
   
-  observeEvent(input$meteo_submit, {
+  observeEvent(input$change_forcing, {
     
     if (is.null(rv$stat_manip)) {
       change_stat <- active_stat()
@@ -251,7 +264,7 @@ server <- function(input, output, session) {
       change_stat <- rv$stat_manip
     }
     
-    tmp <- input$meteo_corr
+    tmp <- input$new_forcing
     if (rv$click_info$curveNumber == 0 || rv$click_info$curveNumber == 2) {
       tmp[tmp < 0] <- 0
       tmp[tmp > 300] <- 300
@@ -260,9 +273,9 @@ server <- function(input, output, session) {
       rv$input_manip$prec_manip[irow, icol] <- tmp
     }
     
-    updateNumericInput(session, "meteo_corr", value = NA)
+    updateNumericInput(session, "new_forcing", value = NA)
     
-    leafletProxy("stat_map", session) %>%
+    leafletProxy("map", session) %>%
       removeDrawToolbar() %>%
       hideGroup("changeable") %>%
       hideGroup("test")
@@ -270,8 +283,8 @@ server <- function(input, output, session) {
     })
   
   observeEvent(active_stat(), {
-    updateNumericInput(session, "meteo_corr", value = NA)
-    leafletProxy("stat_map", session) %>%
+    updateNumericInput(session, "new_forcing", value = NA)
+    leafletProxy("map", session) %>%
       removeDrawToolbar()
   })
   
@@ -281,11 +294,11 @@ server <- function(input, output, session) {
   })
   
   
-  observeEvent(input$stat_map_draw_new_feature,{
+  observeEvent(input$map_draw_new_feature,{
     
     # Extract coordinates from drawn polygon
     
-    p_all <- input$stat_map_draw_new_feature$geometry$coordinates
+    p_all <- input$map_draw_new_feature$geometry$coordinates
     
     longitude_poly <- c()
     latitude_poly <- c()
@@ -302,7 +315,7 @@ server <- function(input, output, session) {
                                longitude_poly,
                                latitude_poly)
     
-    leafletProxy("stat_map", session) %>%
+    leafletProxy("map", session) %>%
       
       clearGroup("changeable") %>%
       
@@ -319,18 +332,9 @@ server <- function(input, output, session) {
       
       clearGroup("test")
     
-    
     rv$stat_manip <- df_meta$stat_id[inside == 1]
     
-    
-      # 
-      # clearGroup("changeable") %>%
-      # 
-      # clearGroup("test")
-    
   })
-  
-  
   
 }
 

@@ -1,15 +1,18 @@
 
-library(lubridate)
-library(plotly)
-library(R.utils)
-library(leaflet)
-library(leaflet.extras)
-library(dplyr)
-library(shinyjs)
-library(airGR)
-library(shinydashboard)
-library(sp)
+if (!require('lubridate')) install.packages('lubridate', repos = "http://cran.us.r-project.org"); library(lubridate)
+if (!require('plotly')) install.packages('plotly', repos = "http://cran.us.r-project.org"); library(plotly)
+if (!require('R.utils')) install.packages('R.utils', repos = "http://cran.us.r-project.org"); library(R.utils)
+if (!require('leaflet')) install.packages('leaflet', repos = "http://cran.us.r-project.org"); library(leaflet)
+if (!require('leaflet.extras')) install.packages('leaflet.extras', repos = "http://cran.us.r-project.org"); library(leaflet.extras)
+if (!require('dplyr')) install.packages('dplyr', repos = "http://cran.us.r-project.org"); library(dplyr)
+if (!require('shinyjs')) install.packages('shinyjs', repos = "http://cran.us.r-project.org"); library(shinyjs)
+if (!require('airGR')) install.packages('airGR', repos = "http://cran.us.r-project.org"); library(airGR)
+if (!require('shinydashboard')) install.packages('shinydashboard', repos = "http://cran.us.r-project.org"); library(shinydashboard)
+if (!require('sp')) install.packages('sp', repos = "http://cran.us.r-project.org"); library(sp)
 
+
+
+base_folder <- "C:/Work/Rcode/fantastic_app"
 
 
 source("class_definitions.R")

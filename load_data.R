@@ -1,26 +1,27 @@
 
 
+
 # Load metadata -----------------------------------------------------------
 
-load("data/df_meta.RData")
+load(file.path(base_folder, "data/df_meta.RData"))
 
 
 # Load observations -------------------------------------------------------
 
-load("data/obs_runoff.RData")
+load(file.path(base_folder,"data/obs_runoff.RData"))
 
-load("data/obs_prec.RData")
+load(file.path(base_folder,"data/obs_prec.RData"))
 
-load("data/obs_tair.RData")
+load(file.path(base_folder,"data/obs_tair.RData"))
 
 obs_runoff$data[obs_runoff$data < 0] <- NA
 
 
-load("data/obs_runoff_all.RData")
+load(file.path(base_folder,"data/obs_runoff_all.RData"))
 
-load("data/obs_prec_all.RData")
+load(file.path(base_folder,"data/obs_prec_all.RData"))
 
-load("data/obs_tair_all.RData")
+load(file.path(base_folder,"data/obs_tair_all.RData"))
 
 obs_runoff_all$data[obs_runoff_all$data < 0] <- NA
 
@@ -28,7 +29,9 @@ obs_runoff_all$data[obs_runoff_all$data < 0] <- NA
 
 # Load parameters ---------------------------------------------------------
 
-load("data/param_gr4j.RData")
+file_param <- file.path(base_folder, "data/param_gr4j.RData")
+
+load(file_param)
 
 
 
@@ -37,7 +40,7 @@ load("data/param_gr4j.RData")
 
 # Path to model results
 
-path_sim <- "C:/Work/Rcode/fantastic_app/data/res_forecast/201711211233"
+path_sim <- file.path(base_folder, "data/res_forecast/201711211233")   #"C:/Work/Rcode/fantastic_app/data/res_forecast/201711211233"
 
 # Load hbv model results
 
