@@ -8,104 +8,104 @@ source("global.R")
 # User interface ----------------------------------------------------------
 
 ui <- dashboardPage(skin = "blue",
-  
-  dashboardHeader(
-    title = "Flood forecasting",
-    titleWidth = 350),
-  
-  dashboardSidebar(
-    
-    width = 350,
-    
-    useShinyjs(),
-    
-    br(),
-    
-    box(title ="Select station",
-        background ="black",
-        status = "primary",
-        solidHeader = TRUE, 
-        selectInput("station",
-                    NULL,
-                    choices = df_meta$stat_id,
-                    selectize = TRUE),
-        fluidRow(
-          column(3, actionButton("prev_stat", "Prev", width = 70)),
-          column(3, actionButton("next_stat", "Next", width = 70))),
-        width = 12),
-    
-    box(title ="Select models",
-        background ="black",
-        status = "primary",
-        solidHeader = TRUE, 
-        checkboxGroupInput("models",
-                           NULL,
-                           choices = models,
-                           selected = "hbv_d"),  
-        width = 12),
-    
-    box(title ="Adjust forcings",
-        background ="black",
-        status = "primary",
-        solidHeader = TRUE, 
-        numericInput("new_forcing",
-                     label = "Change input:",
-                     value = NULL),
-        fluidRow(
-          column(3, actionButton("change_forcing", "Change")),
-          column(3, actionButton("clear_stat", "Clear selection"))),
-        width = 12),
-    
-    box(title ="Rerun models",
-        background ="black",
-        status = "primary",
-        solidHeader = TRUE, 
-        actionButton("run_model", "Run model"),
-        width = 12),
-    
-    absolutePanel(
-      bottom = 10,
-      left = 10,
-      draggable = F,
-      width='100%',
-      height='auto',
-      p(a(icon('github fa-2x'),href='https://github.com/jmgnve/fantastic_app',target='_blank')))
-    
-  ),
-  
-  
-  dashboardBody(
-    
-    tags$head(
-      tags$style(HTML(".leaflet-container { background: #ffffff; }"))
-    ),
-    
-    fluidRow(
-
-      column(7,
-
-             plotlyOutput("runoff",
-                          width = "100%",
-                          height = 450),
-
-             plotlyOutput("meteorology",
-                          width = "100%",
-                          height = 450)
-
-      ),
-
-      column(5,
-
-             leafletOutput(outputId = "map",
-                           height = 900,
-                           width = "100%")
-
-      )
-
-    )
-  
-  )
-
+                    
+                    dashboardHeader(
+                      title = "Flood forecasting",
+                      titleWidth = 350),
+                    
+                    dashboardSidebar(
+                      
+                      width = 350,
+                      
+                      useShinyjs(),
+                      
+                      br(),
+                      
+                      box(title ="Select station",
+                          background ="black",
+                          status = "primary",
+                          solidHeader = TRUE, 
+                          selectInput("station",
+                                      NULL,
+                                      choices = df_meta$stat_id,
+                                      selectize = TRUE),
+                          fluidRow(
+                            column(3, actionButton("prev_stat", "Prev", width = 70)),
+                            column(3, actionButton("next_stat", "Next", width = 70))),
+                          width = 12),
+                      
+                      box(title ="Select models",
+                          background ="black",
+                          status = "primary",
+                          solidHeader = TRUE, 
+                          checkboxGroupInput("models",
+                                             NULL,
+                                             choices = models,
+                                             selected = "hbv_d"),  
+                          width = 12),
+                      
+                      box(title ="Adjust forcings",
+                          background ="black",
+                          status = "primary",
+                          solidHeader = TRUE, 
+                          numericInput("new_forcing",
+                                       label = "Change input:",
+                                       value = NULL),
+                          fluidRow(
+                            column(3, actionButton("change_forcing", "Change")),
+                            column(3, actionButton("clear_stat", "Clear selection"))),
+                          width = 12),
+                      
+                      box(title ="Rerun models",
+                          background ="black",
+                          status = "primary",
+                          solidHeader = TRUE, 
+                          actionButton("run_model", "Run model"),
+                          width = 12),
+                      
+                      absolutePanel(
+                        bottom = 10,
+                        left = 10,
+                        draggable = F,
+                        width='100%',
+                        height='auto',
+                        p(a(icon('github fa-2x'),href='https://github.com/jmgnve/fantastic_app',target='_blank')))
+                      
+                    ),
+                    
+                    
+                    dashboardBody(
+                      
+                      tags$head(
+                        tags$style(HTML(".leaflet-container { background: #ffffff; }"))
+                      ),
+                      
+                      fluidRow(
+                        
+                        column(7,
+                               
+                               plotlyOutput("runoff",
+                                            width = "100%",
+                                            height = 450),
+                               
+                               plotlyOutput("meteorology",
+                                            width = "100%",
+                                            height = 450)
+                               
+                        ),
+                        
+                        column(5,
+                               
+                               leafletOutput(outputId = "map",
+                                             height = 900,
+                                             width = "100%")
+                               
+                        )
+                        
+                      )
+                      
+                    )
+                    
 )
 
 
@@ -158,11 +158,13 @@ server <- function(input, output, session) {
   # Update station selection for dropdown menu and map
   
   observeEvent(input$map_marker_click, {
-    updateSelectInput(
-      session,
-      "station",
-      selected = substring(input$map_marker_click$id, 5)
-    )
+    if (input$map_marker_click$id != "selected") {
+      updateSelectInput(
+        session,
+        "station",
+        selected = input$map_marker_click$id
+      )
+    }
   })
   
   
@@ -170,11 +172,9 @@ server <- function(input, output, session) {
   observeEvent(active_stat(), {
     istat <- which(df_meta$stat_id == active_stat())
     leafletProxy("map", session) %>%
-      clearGroup("selected") %>%
       addCircleMarkers(lng = df_meta$longitude[istat],
                        lat = df_meta$latitude[istat],
-                       layerId = paste("sel", df_meta$stat_id[istat], sep = "_"),
-                       group = "selected",
+                       layerId = "selected",
                        color = "black",
                        radius = 8,
                        stroke = TRUE,
@@ -230,15 +230,15 @@ server <- function(input, output, session) {
     leafletProxy("map", session) %>%
       
       showGroup("changeable") %>%
-    
+      
       addDrawToolbar(targetGroup = "test",
                      rectangleOptions = F,
                      polylineOptions = F,
                      markerOptions = F,
                      circleOptions = F,
                      singleFeature = TRUE)
-      
-      
+    
+    
     
     print(rv$stat_manip)
     
@@ -280,7 +280,7 @@ server <- function(input, output, session) {
       hideGroup("changeable") %>%
       hideGroup("test")
     
-    })
+  })
   
   observeEvent(active_stat(), {
     updateNumericInput(session, "new_forcing", value = NA)

@@ -402,8 +402,7 @@ plot_map <- function(df_meta) {
     
     addCircleMarkers(lng = df_meta$longitude,
                      lat = df_meta$latitude,
-                     layerId = paste("all", df_meta$stat_id, sep = "_"),
-                     group = "stations_all",
+                     layerId = df_meta$stat_id,
                      color = col_binned,
                      radius = 6,
                      stroke = FALSE,
