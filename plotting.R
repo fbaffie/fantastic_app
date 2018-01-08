@@ -281,6 +281,8 @@ plot_runoff <- function(selected_station, selected_models, model_res, obs_runoff
                   mode = 'lines',
                   line = list(color = "black"))
   
+  print(selected_models)
+  
   for (i in selected_models) {
     p1 <- plot_sim_runoff(model_res[[i]], selected_station, p1)
   }
