@@ -12,7 +12,7 @@ if (!require('sp')) install.packages('sp', repos = "http://cran.us.r-project.org
 
 
 
-base_folder <- "C:/Work/Rcode/fantastic_app"
+base_folder <- "./"
 
 
 source("class_definitions.R")
